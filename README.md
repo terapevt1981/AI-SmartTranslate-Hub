@@ -38,4 +38,7 @@ Contributions are welcome! Please follow the contribution guidelines.
 
 ---
 
-This README structure provides a clear and concise description of your project for potential contributors and users. You can expand it by adding sections like installation, usage, and contribution guidelines based on your project's progress.
+NOTICE: 
+This project is licensed under the Apache License 2.0 for open-source, non-commercial use. For commercial use of this software, including the creation of services or products based on the software, please obtain a separate commercial license by contacting alex@martynov.biz.
+
+Terms of the commercial license will include royalties or revenue-sharing agreements.
