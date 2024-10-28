@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  translation_service:
+    build: ./translation_service
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+  telegram_bot_service:
+    build: ./telegram_bot_service
+    depends_on:
+      - translation_service
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TRANSLATION_SERVICE_URL=http://translation_service:8000/translate 
