@@ -261,6 +261,135 @@ Translation Service предоставляет следующие endpoints:
 3. Автоматизация масштабирования
 4. Улучшение безопасности
 
+
+# AI SmartTranslate Hub - Структура проекта
+
+ai-smarttranslate-hub/
+├── docs/
+│ ├── git_workflow_guide.md
+│ └── deployment_guide.md
+│
+├── telegram_bot_service/
+│ ├── Dockerfile
+│ ├── requirements.txt
+│ ├── README.md
+│ ├── README.ru.md
+│ ├── bot.py
+│ ├── config.py
+│ ├── handlers/
+│ │ ├── message_handler.py
+│ │ └── error_handler.py
+│ └── utils/
+│ └── logger.py
+│
+├── translation_service/
+│ ├── Dockerfile
+│ ├── requirements.txt
+│ ├── README.md
+│ ├── README.ru.md
+│ ├── main.py
+│ ├── config.py
+│ ├── app/
+│ │ ├── api.py
+│ │ ├── models.py
+│ │ └── services.py
+│ └── utils/
+│ └── logger.py
+│
+├── transport_service/
+│ ├── Dockerfile
+│ ├── requirements.txt
+│ ├── README.md
+│ ├── main.py
+│ ├── config.py
+│ ├── app/
+│ │ ├── api.py
+│ │ ├── models.py
+│ │ └── services.py
+│ ├── middleware/
+│ │ ├── circuit_breaker.py
+│ │ └── rate_limiter.py
+│ └── utils/
+│ ├── logger.py
+│ └── metrics.py
+│
+├── k8s/
+│ ├── telegram-bot/
+│ │ ├── deployment.yaml
+│ │ └── service.yaml
+│ ├── translation-service/
+│ │ ├── deployment.yaml
+│ │ └── service.yaml
+│ ├── transport-service/
+│ │ ├── deployment.yaml
+│ │ └── service.yaml
+│ └── monitoring/
+│ ├── prometheus/
+│ └── grafana/
+│
+├── .gitignore
+├── docker-compose.yml
+├── docker-compose.dev.yml
+├── project_report.md
+├── project_report_update.md
+└── README.md
+
+
+## Описание основных компонентов
+
+### 1. Сервисы
+- **telegram_bot_service**: Обработка взаимодействия с Telegram
+- **translation_service**: Сервис перевода текста
+- **transport_service**: Центральный сервис маршрутизации
+
+### 2. Kubernetes конфигурация
+- Отдельные манифесты для каждого сервиса
+- Конфигурация мониторинга
+- Настройки масштабирования
+
+### 3. Документация
+- Руководства по развертыванию
+- Инструкции по работе с Git
+- README файлы для каждого сервиса
+
+### 4. Docker конфигурация
+- Dockerfile для каждого сервиса
+- Общий docker-compose.yml
+- Отдельный docker-compose.dev.yml для разработки
+
+### 5. Мониторинг
+- Конфигурация Prometheus
+- Дашборды Grafana
+- Метрики сервисов
+
+## Дополнительные файлы
+
+### Конфигурационные файлы
+- `.env.example` (шаблон переменных окружения)
+- `.gitignore` (исключения для Git)
+- `requirements.txt` (зависимости Python)
+
+### Документация
+- Отчеты о разработке
+- Инструкции по развертыванию
+- API документация
+
+## Рекомендации по организации
+
+1. Соблюдать структуру директорий
+2. Использовать понятные имена файлов
+3. Поддерживать актуальность документации
+4. Регулярно обновлять зависимости
+5. Следить за версионированием
+
+## TODO
+
+1. Добавить тесты для каждого сервиса
+2. Настроить CI/CD пайплайны
+3. Добавить мониторинг производительности
+4. Расширить документацию API
+5. Добавить примеры использования
+
 ---
 
 *Дополнение к отчету подготовлено [дата]*
