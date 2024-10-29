@@ -1,5 +1,5 @@
 # Отчет о разработке AI SmartTranslate Hub
-**Дата**: [Текущая дата]
+**Дата**: 28.10.2024
 **Статус проекта**: В разработке
 **Этап**: MVP
 
@@ -171,9 +171,9 @@ Translation Service предоставляет следующие endpoints:
 
 ## 11. Контакты
 
-- **Project Manager**: [Имя] - [email]
-- **Tech Lead**: [Имя] - [email]
-- **DevOps Engineer**: [Имя] - [email]
+- **Project Manager**: Алексей Мартынов - alex@martynov.biz
+- **Tech Lead**: Алексей Мартынов - alex@martynov.biz
+- **DevOps Engineer**: Алексей Мартынов - alex@martynov.biz
 
 ---
 
