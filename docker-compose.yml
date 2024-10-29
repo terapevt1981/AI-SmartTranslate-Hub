@@ -1,17 +1,34 @@
 version: '3'
 
 services:
+  transport_service:
+    build: ./transport_service
+    ports:
+      - "8001:8000"
+    environment:
+      - LOG_LEVEL=INFO
+    networks:
+      - app_network
+
   translation_service:
     build: ./translation_service
-    ports:
-      - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - app_network
+    depends_on:
+      - transport_service
 
   telegram_bot_service:
     build: ./telegram_bot_service
-    depends_on:
-      - translation_service
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TRANSLATION_SERVICE_URL=http://translation_service:8000/translate 
+      - TRANSPORT_SERVICE_URL=http://transport_service:8000
+    networks:
+      - app_network
+    depends_on:
+      - transport_service
+
+networks:
+  app_network:
+    driver: bridge
