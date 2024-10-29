@@ -9,10 +9,12 @@ TRANSLATION_SERVICE_URL = os.getenv('TRANSLATION_SERVICE_URL', 'http://translati
 # Поддерживаемые языки
 SUPPORTED_LANGUAGES = {
     'en': 'English',
+    'ua': 'Українська',
     'ru': 'Русский',
     'es': 'Español',
     'de': 'Deutsch',
     'fr': 'Français'
+    'it': 'Italiana',
 }
 
 # Настройки логирования
