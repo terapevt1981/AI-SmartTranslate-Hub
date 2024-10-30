@@ -6,15 +6,15 @@ openai.api_key = OPENAI_API_KEY
 async def translate_text(source_text: str, source_language: str, target_language: str) -> str:
     try:
         prompt = f"Translate the following text from {source_language} to {target_language}: {source_text}"
-        
-        response = await openai.ChatCompletion.acreate(
-            model="gpt-3.5-turbo",
+
+        completion = await openai.ChatCompletion.create(
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a professional translator."},
                 {"role": "user", "content": prompt}
             ]
         )
-        
-        return response.choices[0].message.content.strip()
+
+        return completion.choices[0].message.content.strip()
     except Exception as e:
-        raise Exception(f"Translation error: {str(e)}") 
+        raise Exception(f"Translation error: {str(e)}")
