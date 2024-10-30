@@ -7,7 +7,7 @@ async def translate_text(source_text: str, source_language: str, target_language
     try:
         prompt = f"Translate the following text from {source_language} to {target_language}: {source_text}"
 
-        completion = await openai.ChatCompletion.create(
+        completion = await openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a professional translator."},
