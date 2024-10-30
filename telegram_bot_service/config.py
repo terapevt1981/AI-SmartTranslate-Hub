@@ -13,7 +13,7 @@ SUPPORTED_LANGUAGES = {
     'ru': 'Русский',
     'es': 'Español',
     'de': 'Deutsch',
-    'fr': 'Français'
+    'fr': 'Français',
     'it': 'Italiana',
 }
 
