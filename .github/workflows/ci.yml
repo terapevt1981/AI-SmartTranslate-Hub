@@ -49,9 +49,9 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} ./telegram_bot_service
-        gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
-        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }}
+        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }} ./telegram_bot_service
+        gcloud auth configure-docker europe-west12-docker.pkg.dev
+        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }}
 
     - name: Check kubectl
       run: |
