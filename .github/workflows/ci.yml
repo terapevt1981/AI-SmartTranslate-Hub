@@ -49,11 +49,11 @@ jobs:
 
     - name: Build and push Docker images
       run: |
-        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }} ./telegram_bot_service
+        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} ./telegram_bot_service
         docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }} ./translation_service
         docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }} ./transport_service
         
-        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }}
+        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }}
         docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }}
         docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }}
 

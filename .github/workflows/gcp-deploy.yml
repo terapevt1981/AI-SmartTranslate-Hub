@@ -52,16 +52,16 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }} ./telegram_bot_service
+        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} ./telegram_bot_service
 
     - name: Push to Artifact Registry
       run: |
-        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }}
+        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy telegram-bot-service \
-          --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }} \
+          --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} \
           --platform managed \
           --region ${{ secrets.GCP_REGION }} \
           --allow-unauthenticated \
