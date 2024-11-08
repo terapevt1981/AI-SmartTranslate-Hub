@@ -1,0 +1,33 @@
+name: Create Artifact Repositories
+
+on:
+  workflow_dispatch:  # Можно запустить вручную
+
+jobs:
+  create-repositories:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Create Artifact Repositories
+      run: |
+        gcloud artifacts repositories create telegram-bot \
+            --repository-format=docker \
+            --location=${{ secrets.GCP_REGION }}
+
+        gcloud artifacts repositories create translation-service \
+            --repository-format=docker \
+            --location=${{ secrets.GCP_REGION }}
+
+        gcloud artifacts repositories create transport-service \
+            --repository-format=docker \
+            --location=${{ secrets.GCP_REGION }}
