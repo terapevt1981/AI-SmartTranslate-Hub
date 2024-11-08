@@ -44,12 +44,18 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
     - name: Login to Google Artifact Registry
       uses: docker/login-action@v2
       with:
         registry: europe-west12-docker.pkg.dev
         username: _json_key
-        password: ${{ secrets.GCP_SA_KEY }}
+        password: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     
     - name: Build and push to Docker Hub
       uses: docker/build-push-action@v6

@@ -81,12 +81,32 @@ jobs:
     - name: Build and Push Docker Image
       env:
         SERVICE_NAME: ${{ matrix.service }}
+        TELEGRAM_REPO_NAME: telegram-bot
+        TRANSLATION_REPO_NAME: translation-service
+        TRANSPORT_REPO_NAME: transport-service
       run: |
-        # Преобразуем имя сервиса для директории
-        SERVICE_DIR=$(echo $SERVICE_NAME | sed 's/-/_/g')
+        # Определяем директорию проекта
+        case "${{ matrix.service }}" in
+          "telegram-bot-service")
+            SERVICE_DIR="telegram_bot_service"
+            REPO_NAME=$TELEGRAM_REPO_NAME
+            ;;
+          "translation-service")
+            SERVICE_DIR="translation_service"
+            REPO_NAME=$TRANSLATION_REPO_NAME
+            ;;
+          "transport-service")
+            SERVICE_DIR="transport_service"
+            REPO_NAME=$TRANSPORT_REPO_NAME
+            ;;
+          *)
+            echo "Unknown service: ${{ matrix.service }}"
+            exit 1
+            ;;
+        esac
         
-        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/$SERVICE_NAME/$SERVICE_NAME:${{ github.sha }} ./$SERVICE_DIR
-        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/$SERVICE_NAME/$SERVICE_NAME:${{ github.sha }}
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/$REPO_NAME/${{ matrix.service }}:${{ github.sha }} ./$SERVICE_DIR
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/$REPO_NAME/${{ matrix.service }}:${{ github.sha }}
 
     - name: Install gke-gcloud-auth-plugin
       run: |
