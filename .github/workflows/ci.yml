@@ -24,7 +24,9 @@ jobs:
       run: |
         pytest --cov=./ --cov-report=xml
     - name: Upload coverage
-      uses: codecov/codecov-action@v3  # Обновлена версия
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     needs: test
@@ -32,7 +34,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # Аутентификация в Google Cloud
     - name: Google Auth
       id: auth
       uses: google-github-actions/auth@v2
@@ -42,16 +43,19 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
+    - name: Configure Docker
+      run: |
+        gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+
     - name: Build and push Docker images
       run: |
-        gcloud auth configure-docker
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }} ./telegram_bot_service
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/translation-service:${{ github.sha }} ./translation_service
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/transport-service:${{ github.sha }} ./transport_service
+        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }} ./telegram_bot_service
+        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }} ./translation_service
+        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }} ./transport_service
         
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }}
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/translation-service:${{ github.sha }}
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/transport-service:${{ github.sha }}
+        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }}
+        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }}
+        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }}
 
   deploy:
     needs: build
@@ -59,7 +63,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # Аутентификация в Google Cloud
     - name: Google Auth
       id: auth
       uses: google-github-actions/auth@v2
@@ -70,6 +73,9 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Deploy to GKE
+      # run: |
+      #   gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }}
+      #   kubectl apply -f k8s/
       run: |
-        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }}
+        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --location ${{ secrets.GKE_ZONE }}
         kubectl apply -f k8s/

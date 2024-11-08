@@ -21,13 +21,15 @@ jobs:
     - name: Create Artifact Repositories
       run: |
         gcloud artifacts repositories create telegram-bot \
-            --repository-format=docker \
-            --location=${{ secrets.GCP_REGION }}
+            --location=${{ secrets.GCP_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
 
         gcloud artifacts repositories create translation-service \
             --repository-format=docker \
-            --location=${{ secrets.GCP_REGION }}
+            --location=${{ secrets.GCP_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
 
         gcloud artifacts repositories create transport-service \
             --repository-format=docker \
-            --location=${{ secrets.GCP_REGION }}
+            --location=${{ secrets.GCP_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
