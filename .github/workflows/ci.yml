@@ -10,9 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4  # Обновлено
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v5  # Обновлено
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
     - name: Install dependencies
@@ -24,33 +24,52 @@ jobs:
       run: |
         pytest --cov=./ --cov-report=xml
     - name: Upload coverage
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3  # Обновлена версия
 
   build:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4  # Обновлено
-    - name: Build and push Docker images
-    uses: docker/build-push-action@v6  # Обновлено
+    - uses: actions/checkout@v4
+    
+    # Аутентификация в Google Cloud
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v2
       with:
-        context: .
-        push: true
-        tags: |
-          gcr.io/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }}
-          gcr.io/${{ secrets.GCP_PROJECT_ID }}/translation-service:${{ github.sha }}
-          gcr.io/${{ secrets.GCP_PROJECT_ID }}/transport-service:${{ github.sha }}
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Build and push Docker images
+      run: |
+        gcloud auth configure-docker
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }} ./telegram_bot_service
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/translation-service:${{ github.sha }} ./translation_service
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/transport-service:${{ github.sha }} ./transport_service
+        
+        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/telegram-bot:${{ github.sha }}
+        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/translation-service:${{ github.sha }}
+        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/transport-service:${{ github.sha }}
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4  # Обновлено
-    - uses: google-github-actions/setup-gcloud@v1  # Обновлено
+    - uses: actions/checkout@v4
+    
+    # Аутентификация в Google Cloud
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v2
       with:
-        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}  # Обновлено
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
     - name: Deploy to GKE
       run: |
         gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }}
-        kubectl apply -f k8s/ 
+        kubectl apply -f k8s/
