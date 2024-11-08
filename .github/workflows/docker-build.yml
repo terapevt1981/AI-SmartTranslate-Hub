@@ -19,7 +19,7 @@ jobs:
     steps:
     # Шаг 1: Checkout кода
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     # Шаг 2: Настройка Docker Buildx
     - name: Set up Docker Buildx
@@ -34,7 +34,7 @@ jobs:
     
     # Шаг 4: Сборка и пуш образа
     - name: Build and push
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v6
       with:
         context: ./telegram_bot_service
         push: true
