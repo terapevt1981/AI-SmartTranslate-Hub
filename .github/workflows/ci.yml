@@ -75,5 +75,3 @@ jobs:
         sed -i "s/\${PROJECT_ID}/$PROJECT_ID/g" k8s/telegram-bot/deployment.yaml
         sed -i "s/\${GITHUB_SHA}/$GITHUB_SHA/g" k8s/telegram-bot/deployment.yaml
         kubectl apply -f k8s/telegram-bot/
-        kubectl apply -f k8s/translation-service/
-        kubectl apply -f k8s/transport-service/
