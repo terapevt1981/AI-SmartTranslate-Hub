@@ -47,15 +47,16 @@ jobs:
       run: |
         gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
-    - name: Build and push Docker images
+    - name: Build and Push Docker Image
       run: |
         docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} ./telegram_bot_service
-        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }} ./translation_service
-        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }} ./transport_service
-        
+        gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
         docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }}
-        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }}
-        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }}
+
+    - name: Debug Docker Authentication
+      run: |
+        docker info
+        gcloud auth list
 
   deploy:
     needs: build
