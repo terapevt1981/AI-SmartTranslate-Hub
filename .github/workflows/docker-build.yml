@@ -1,43 +1,70 @@
 name: Docker Build and Push
 
-# Когда срабатывает workflow
 on:
   push:
     branches: [ main ]
     paths:
       - 'telegram_bot_service/**'
+      - 'translation_service/**'
+      - 'transport_service/**'
       - '.github/workflows/docker-build.yml'
   
-  # Возможность запуска workflow вручную
   workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build'
+        required: true
+        type: choice
+        options:
+          - telegram_bot_service
+          - translation_service
+          - transport_service
 
-# Описание jobs (задач)
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     
+    strategy:
+      matrix:
+        service: 
+          - telegram_bot_service
+          - translation_service
+          - transport_service
+
     steps:
-    # Шаг 1: Checkout кода
     - name: Checkout code
       uses: actions/checkout@v4
     
-    # Шаг 2: Настройка Docker Buildx
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     
-    # Шаг 3: Логин в Docker Hub
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    # Шаг 4: Сборка и пуш образа
-    - name: Build and push
+    - name: Login to Google Artifact Registry
+      uses: docker/login-action@v2
+      with:
+        registry: europe-west12-docker.pkg.dev
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY }}
+    
+    - name: Build and push to Docker Hub
       uses: docker/build-push-action@v6
       with:
-        context: ./telegram_bot_service
+        context: ./${{ matrix.service }}
         push: true
         tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/telegram_bot_service:latest
-          ${{ secrets.DOCKERHUB_USERNAME }}/telegram_bot_service:${{ github.sha }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:${{ github.sha }}
+    
+    - name: Build and push to Google Artifact Registry
+      uses: docker/build-push-action@v6
+      with:
+        context: ./${{ matrix.service }}
+        push: true
+        tags: |
+          europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/${{ matrix.service }}:latest
+          europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/${{ matrix.service }}:${{ github.sha }}
