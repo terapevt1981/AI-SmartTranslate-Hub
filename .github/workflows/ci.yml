@@ -10,9 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4  # Обновлено
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5  # Обновлено
       with:
         python-version: '3.9'
     - name: Install dependencies
@@ -30,9 +30,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4  # Обновлено
     - name: Build and push Docker images
-      uses: docker/build-push-action@v2
+    uses: docker/build-push-action@v6  # Обновлено
       with:
         context: .
         push: true
@@ -45,10 +45,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: google-github-actions/setup-gcloud@v0
+    - uses: actions/checkout@v4  # Обновлено
+    - uses: google-github-actions/setup-gcloud@v1  # Обновлено
       with:
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}  # Обновлено
         project_id: ${{ secrets.GCP_PROJECT_ID }}
     - name: Deploy to GKE
       run: |
