@@ -58,7 +58,19 @@ jobs:
         which kubectl
         kubectl version --client
 
-    - name: Deploy to GKE
+    - name: Install gke-gcloud-auth-plugin
       run: |
-        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region ${{ secrets.GKE_ZONE }}
-        kubectl apply -f k8s/
+        sudo apt-get update
+        sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+
+- name: Deploy to GKE
+  env:
+    PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+    GITHUB_SHA: ${{ github.sha }}
+  run: |
+    gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region ${{ secrets.GKE_ZONE }}
+    sed -i "s/\${PROJECT_ID}/$PROJECT_ID/g" k8s/telegram-bot/deployment.yaml
+    sed -i "s/\${GITHUB_SHA}/$GITHUB_SHA/g" k8s/telegram-bot/deployment.yaml
+    kubectl apply -f k8s/telegram-bot/
+    kubectl apply -f k8s/translation-service/
+    kubectl apply -f k8s/transport-service/
