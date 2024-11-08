@@ -51,6 +51,8 @@ jobs:
       run: |
         docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} ./telegram_bot_service
         gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+        echo ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} | base64 -d > /tmp/gcp-key.json
+        gcloud auth activate-service-account --key-file=/tmp/gcp-key.json        
         docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }}
 
     - name: Debug Docker Authentication
@@ -74,9 +76,6 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Deploy to GKE
-      # run: |
-      #   gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }}
-      #   kubectl apply -f k8s/
       run: |
         gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --location ${{ secrets.GKE_ZONE }}
         kubectl apply -f k8s/
