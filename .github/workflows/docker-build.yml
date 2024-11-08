@@ -53,7 +53,7 @@ jobs:
     - name: Login to Google Artifact Registry
       uses: docker/login-action@v2
       with:
-        registry: europe-west12-docker.pkg.dev
+        registry: ${{ secrets.GCP_REGION }}-docker.pkg.dev
         username: _json_key
         password: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     
