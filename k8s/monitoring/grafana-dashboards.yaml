@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+data:
+  services-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Services Overview",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "type": "graph",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Response Times",
+            "type": "graph",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "rate(http_request_duration_seconds_sum[5m])"
+              }
+            ]
+          }
+        ]
+      }
+    } 

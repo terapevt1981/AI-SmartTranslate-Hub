@@ -1,0 +1,43 @@
+name: Docker Build and Push
+
+# Когда срабатывает workflow
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'telegram_bot_service/**'
+      - '.github/workflows/docker-build.yml'
+  
+  # Возможность запуска workflow вручную
+  workflow_dispatch:
+
+# Описание jobs (задач)
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Шаг 1: Checkout кода
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    # Шаг 2: Настройка Docker Buildx
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    # Шаг 3: Логин в Docker Hub
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    # Шаг 4: Сборка и пуш образа
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: ./telegram_bot_service
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/telegram_bot_service:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/telegram_bot_service:${{ github.sha }}

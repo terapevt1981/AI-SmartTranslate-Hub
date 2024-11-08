@@ -1,14 +1,15 @@
-import httpx
 from telegram import Update
 from telegram.ext import CallbackContext
-from config import TRANSPORT_SERVICE_URL
-import logging
+import httpx
+from ..config import TRANSPORT_SERVICE_URL
+from ..utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 async def handle_message(update: Update, context: CallbackContext):
     try:
-        text = update.message.text
+        message = update.message.text
+        user_id = update.effective_user.id
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -18,17 +19,15 @@ async def handle_message(update: Update, context: CallbackContext):
                     "endpoint": "translate",
                     "method": "POST",
                     "payload": {
-                        "source_text": text,
-                        "source_language": "auto",
-                        "target_language": "en"
+                        "text": message,
+                        "user_id": user_id
                     }
                 }
             )
             
         if response.status_code == 200:
-            result = response.json()
-            translated_text = result["translated_text"]
-            await update.message.reply_text(translated_text)
+            translation = response.json()
+            await update.message.reply_text(translation['translated_text'])
         else:
             await update.message.reply_text("Извините, произошла ошибка при переводе.")
             
