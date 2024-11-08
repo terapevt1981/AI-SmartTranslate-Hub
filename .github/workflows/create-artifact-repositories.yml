@@ -1,7 +1,15 @@
 name: Create Artifact Repositories
 
 on:
-  workflow_dispatch:  # Можно запустить вручную
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'GCP Region'
+        required: true
+        default: 'europe-west12'
+      project_id:
+        description: 'GCP Project ID'
+        required: true
 
 jobs:
   create-repositories:
@@ -19,17 +27,67 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Create Artifact Repositories
+      env:
+        GCP_REGION: ${{ inputs.region || secrets.GCP_REGION }}
+        GCP_PROJECT_ID: ${{ inputs.project_id || secrets.GCP_PROJECT_ID }}
       run: |
-        gcloud artifacts repositories create telegram-bot \
-            --location=${{ secrets.GCP_REGION }} \
-            --project=${{ secrets.GCP_PROJECT_ID }}
+        # Список репозиториев
+        REPOSITORIES=(
+          "telegram-bot-service"
+          "translation-service"
+          "transport-service"
+          "database-service"
+          "monitoring-service"
+        )
 
-        gcloud artifacts repositories create translation-service \
+        # Создание репозиториев с расширенной конфигурацией
+        for repo in "${REPOSITORIES[@]}"; do
+          echo "Creating repository: $repo"
+          gcloud artifacts repositories create "$repo" \
             --repository-format=docker \
-            --location=${{ secrets.GCP_REGION }} \
-            --project=${{ secrets.GCP_PROJECT_ID }}
+            --location="$GCP_REGION" \
+            --project="$GCP_PROJECT_ID" \
+            --description="Docker repository for $repo" \
+            --labels=service="$repo",managed-by="github-actions"
+        done
 
-        gcloud artifacts repositories create transport-service \
-            --repository-format=docker \
-            --location=${{ secrets.GCP_REGION }} \
-            --project=${{ secrets.GCP_PROJECT_ID }}
+    - name: Configure Docker Auth
+      env:
+        GCP_REGION: ${{ inputs.region || secrets.GCP_REGION }}
+      run: |
+        gcloud auth configure-docker "$GCP_REGION-docker.pkg.dev"
+
+    - name: Verify Repositories
+      env:
+        GCP_REGION: ${{ inputs.region || secrets.GCP_REGION }}
+        GCP_PROJECT_ID: ${{ inputs.project_id || secrets.GCP_PROJECT_ID }}
+      run: |
+        gcloud artifacts repositories list \
+          --location="$GCP_REGION" \
+          --project="$GCP_PROJECT_ID"
+
+    - name: Set IAM Permissions
+      env:
+        GCP_REGION: ${{ inputs.region || secrets.GCP_REGION }}
+        GCP_PROJECT_ID: ${{ inputs.project_id || secrets.GCP_PROJECT_ID }}
+      run: |
+        # Получаем email сервисного аккаунта GitHub Actions
+        SERVICE_ACCOUNT_EMAIL=$(gcloud config get-value account)
+
+        # Список репозиториев
+        REPOSITORIES=(
+          "telegram-bot-service"
+          "translation-service"
+          "transport-service"
+          "database-service"
+          "monitoring-service"
+        )
+
+        # Назначаем роли для каждого репозитория
+        for repo in "${REPOSITORIES[@]}"; do
+          gcloud artifacts repositories add-iam-policy-binding "$repo" \
+            --location="$GCP_REGION" \
+            --project="$GCP_PROJECT_ID" \
+            --member="serviceAccount:$SERVICE_ACCOUNT_EMAIL" \
+            --role="roles/artifactregistry.writer"
+        done

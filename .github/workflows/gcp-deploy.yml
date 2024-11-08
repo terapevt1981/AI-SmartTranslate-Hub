@@ -5,12 +5,32 @@ on:
     branches: [ main ]
     paths:
       - 'telegram_bot_service/**'
+      - 'translation_service/**'
+      - 'transport_service/**'
       - '.github/workflows/gcp-deploy.yml'
       - '.github/workflows/docker-build.yml'
+
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: true
+        type: choice
+        options:
+          - telegram_bot_service
+          - translation_service
+          - transport_service
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: 
+          - telegram_bot_service
+          - translation_service
+          - transport_service
+
     steps:
     - uses: actions/checkout@v4
     
@@ -23,16 +43,26 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pytest
-        pip install -r telegram_bot_service/requirements.txt
+        pip install -r ${{ matrix.service }}/requirements.txt
     
     - name: Run tests
       run: |
-        cd telegram_bot_service
-        pytest tests/
+        cd ${{ matrix.service }}
+        if [ -d "tests" ]; then
+          pytest tests/
+        else
+          echo "No tests directory found for ${{ matrix.service }}"
+        fi
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: 
+          - telegram_bot_service
+          - translation_service
+          - transport_service
 
     steps:
     - uses: actions/checkout@v4
@@ -52,17 +82,31 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} ./telegram_bot_service
+        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/service:${{ github.sha }} ./${{ matrix.service }}
 
     - name: Push to Artifact Registry
       run: |
-        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }}
+        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/service:${{ github.sha }}
 
     - name: Deploy to Cloud Run
       run: |
-        gcloud run deploy telegram-bot-service \
-          --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} \
+        SERVICE_NAME=$(echo "${{ matrix.service }}" | sed 's/_/-/g')
+        
+        case "${{ matrix.service }}" in
+          telegram_bot_service)
+            ENV_VARS="TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
+            ;;
+          translation_service)
+            ENV_VARS="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}"
+            ;;
+          transport_service)
+            ENV_VARS=""
+            ;;
+        esac
+
+        gcloud run deploy $SERVICE_NAME \
+          --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/service:${{ github.sha }} \
           --platform managed \
           --region ${{ secrets.GCP_REGION }} \
           --allow-unauthenticated \
-          --set-env-vars TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          ${ENV_VARS:+ --set-env-vars $ENV_VARS}
