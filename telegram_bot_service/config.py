@@ -4,19 +4,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TRANSLATION_SERVICE_URL = os.getenv('TRANSLATION_SERVICE_URL', 'http://translation_service:8000/translate')
+TRANSPORT_SERVICE_URL = os.getenv('TRANSPORT_SERVICE_URL', 'http://transport_service:8080')
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 # Поддерживаемые языки
 SUPPORTED_LANGUAGES = {
     'en': 'English',
-    'ua': 'Українська',
     'ru': 'Русский',
-    'es': 'Español',
+    'uk': 'Українська',
     'de': 'Deutsch',
     'fr': 'Français',
-    'it': 'Italiana',
+    'es': 'Español',
+    'it': 'Italiano'
 }
 
 # Настройки логирования
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-LOG_LEVEL = 'INFO' 
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')

@@ -1,9 +1,12 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class TranslationRequest(BaseModel):
-    source_text: str
-    source_language: str
+    text: str
+    source_language: Optional[str] = None
     target_language: str
+    user_id: int
 
 class TranslationResponse(BaseModel):
-    translated_text: str 
+    translated_text: str
+    detected_language: Optional[str] = None

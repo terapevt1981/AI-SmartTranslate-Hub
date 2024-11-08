@@ -1,6 +1,8 @@
 fastapi==0.68.1
-uvicorn[standard]==0.15.0
-httpx==0.19.0
-python-dotenv==0.19.0
-pydantic==1.8.2
-openai==0.27.0 
+uvicorn==0.15.0
+openai==0.27.0
+sqlalchemy==1.4.41
+psycopg2-binary==2.9.3
+prometheus-client==0.14.1
+httpx==0.23.0
+python-dotenv==0.19.0 

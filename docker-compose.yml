@@ -1,34 +1,45 @@
-version: '3'
+version: '3.8'
 
 services:
-  transport_service:
-    build: ./transport_service
-    ports:
-      - "8001:8000"
+  telegram_bot_service:
+    build: ./telegram_bot_service
     environment:
-      - LOG_LEVEL=INFO
-    networks:
-      - app_network
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TRANSPORT_SERVICE_URL=http://transport_service:8080
+    depends_on:
+      - transport_service
+    restart: always
 
   translation_service:
     build: ./translation_service
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    networks:
-      - app_network
+    ports:
+      - "8000:8000"
     depends_on:
       - transport_service
+    restart: always
 
-  telegram_bot_service:
-    build: ./telegram_bot_service
+  transport_service:
+    build: ./transport_service
+    ports:
+      - "8080:8080"
     environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TRANSPORT_SERVICE_URL=http://transport_service:8000
-    networks:
-      - app_network
+      - DATABASE_URL=${DATABASE_URL}
+    restart: always
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
     depends_on:
       - transport_service
 
-networks:
-  app_network:
-    driver: bridge
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
