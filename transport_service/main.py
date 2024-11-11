@@ -4,8 +4,10 @@ from typing import Dict, Any
 import httpx
 import logging
 from prometheus_client import Counter, Histogram
+import os
 
 app = FastAPI(title="Transport Service")
+PORT = int(os.getenv('PORT', '8080'))
 
 # Метрики
 request_counter = Counter('transport_requests_total', 'Total requests processed')
