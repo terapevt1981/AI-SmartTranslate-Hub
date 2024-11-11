@@ -122,7 +122,7 @@ jobs:
       run: |
         # Пример деплоя транспортного сервиса
         gcloud run deploy telegram-bot \
-          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }} \
+          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }} \
           --platform managed \
           --region ${{ env.GCP_REGION }} \
           --allow-unauthenticated \
