@@ -90,9 +90,9 @@ jobs:
     - name: Build and Push Telegram Bot Service
       run: |
         cd telegram_bot_service
-        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }} .
+        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }} .
         gcloud auth configure-docker europe-west12-docker.pkg.dev
-        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }}
+        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/service:${{ github.sha }}
 
     # Деплой в Cloud Run (если применимо)
     - name: Deploy to Cloud Run Transport Service
@@ -104,6 +104,7 @@ jobs:
           --image europe-west12-docker.pkg.dev/$PROJECT_ID/transport-service/service:$GITHUB_SHA \
           --platform managed \
           --region europe-west12 \
+          --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
           --set-env-vars "DATABASE_URL=${{ secrets.TRANSPORT_SERVICE_DATABASE_URL }},PORT=8080"
 
@@ -116,6 +117,7 @@ jobs:
           --image europe-west12-docker.pkg.dev/$PROJECT_ID/translation-service/service:$GITHUB_SHA \
           --platform managed \
           --region europe-west12 \
+          --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
           --set-env-vars "DATABASE_URL=${{ secrets.TRANSLATION_SERVICE_DATABASE_URL }},PORT=8080"
 
@@ -125,8 +127,9 @@ jobs:
         GITHUB_SHA: ${{ github.sha }}
       run: |
         gcloud run deploy telegram-bot \
-          --image europe-west12-docker.pkg.dev/$PROJECT_ID/telegram-bot/telegram-bot-service:$GITHUB_SHA \
+          --image europe-west12-docker.pkg.dev/$PROJECT_ID/telegram-bot/service:$GITHUB_SHA \
           --platform managed \
           --region europe-west12 \
+          --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
-          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }},PORT=8080"  
+          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }},PORT=8080"
