@@ -106,7 +106,7 @@ jobs:
           --region europe-west12 \
           --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
-          --set-env-vars "DATABASE_URL=${{ secrets.TRANSPORT_SERVICE_DATABASE_URL }},PORT=8080"
+          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},DATABASE_URL=${{ secrets.TRANSPORT_SERVICE_DATABASE_URL }}
 
     - name: Deploy to Cloud Run Translation Service
       env:
@@ -119,7 +119,7 @@ jobs:
           --region europe-west12 \
           --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
-          --set-env-vars "DATABASE_URL=${{ secrets.TRANSLATION_SERVICE_DATABASE_URL }},PORT=8080"
+          --set-env-vars "DATABASE_URL=${{ secrets.TRANSLATION_SERVICE_DATABASE_URL }}"
 
     - name: Deploy to Cloud Run Telegram Bot Service
       env:
@@ -132,4 +132,4 @@ jobs:
           --region europe-west12 \
           --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
-          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }},PORT=8080"
+          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
