@@ -5,4 +5,4 @@ prometheus-client==0.11.0
 pydantic==1.8.2 
 pytest
 pytest-cov
-python-dotenv
+python-dotenv==1.0.1 
