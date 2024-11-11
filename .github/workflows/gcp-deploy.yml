@@ -97,20 +97,18 @@ jobs:
     # Деплой в Cloud Run (если применимо)
     - name: Deploy to Cloud Run Transport Service
       run: |
-        # Пример деплоя транспортного сервиса
         gcloud run deploy transport-service \
-          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/transport-service/service:${{ github.sha }} \
+          --image europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }} \
           --platform managed \
-          --region ${{ env.GCP_REGION }} \
+          --region europe-west12 \
           --allow-unauthenticated
 
     - name: Deploy to Cloud Run Translation Service
       run: |
-        # Пример деплоя транспортного сервиса
         gcloud run deploy translation-service \
-          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/translation-service/service:${{ github.sha }} \
+          --image europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }} \
           --platform managed \
-          --region ${{ env.GCP_REGION }} \
+          --region europe-west12 \
           --allow-unauthenticated \
           --port 8080 \
           --cpu 1 \
@@ -120,11 +118,10 @@ jobs:
 
     - name: Deploy to Cloud Run Telegram Bot Service
       run: |
-        # Пример деплоя транспортного сервиса
         gcloud run deploy telegram-bot \
-          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }} \
+          --image europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }} \
           --platform managed \
-          --region ${{ env.GCP_REGION }} \
+          --region europe-west12 \
           --allow-unauthenticated \
           --port 8080 \
           --cpu 1 \
