@@ -99,6 +99,8 @@ jobs:
       env:
         PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         GITHUB_SHA: ${{ github.sha }}
+        TRANSPORT_SERVICE_URL: ${{ secrets.TRANSPORT_SERVICE_URL }}
+        DATABASE_URL: ${{ secrets.TRANSPORT_SERVICE_DATABASE_URL }}
       run: |
         gcloud run deploy transport-service \
           --image europe-west12-docker.pkg.dev/$PROJECT_ID/transport-service/service:$GITHUB_SHA \
@@ -106,12 +108,14 @@ jobs:
           --region europe-west12 \
           --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
-          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},DATABASE_URL=${{ secrets.TRANSPORT_SERVICE_DATABASE_URL }}"
+          --set-env-vars "TRANSPORT_SERVICE_URL=$TRANSPORT_SERVICE_URL,DATABASE_URL=$DATABASE_URL"
 
     - name: Deploy to Cloud Run Translation Service
       env:
         PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         GITHUB_SHA: ${{ github.sha }}
+        TRANSLATION_SERVICE_URL: ${{ secrets.TRANSLATION_SERVICE_URL }}
+        DATABASE_URL: ${{ secrets.TRANSLATION_SERVICE_DATABASE_URL }}
       run: |
         gcloud run deploy translation-service \
           --image europe-west12-docker.pkg.dev/$PROJECT_ID/translation-service/service:$GITHUB_SHA \
@@ -119,12 +123,16 @@ jobs:
           --region europe-west12 \
           --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
-          --set-env-vars "DATABASE_URL=${{ secrets.TRANSLATION_SERVICE_DATABASE_URL }}"
+          --set-env-vars "DATABASE_URL=$DATABASE_URL"
 
     - name: Deploy to Cloud Run Telegram Bot Service
       env:
         PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         GITHUB_SHA: ${{ github.sha }}
+        TELEGRAM_BOT_SERVICE_URL: ${{ secrets.TELEGRAM_BOT_SERVICE_URL }}
+        DATABASE_URL: ${{ secrets.TELEGRAM_BOT_SERVICE_DATABASE_URL }}
+        TRANSPORT_SERVICE_URL: ${{ secrets.TRANSPORT_SERVICE_URL }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       run: |
         gcloud run deploy telegram-bot \
           --image europe-west12-docker.pkg.dev/$PROJECT_ID/telegram-bot/service:$GITHUB_SHA \
@@ -132,4 +140,4 @@ jobs:
           --region europe-west12 \
           --service-account=923903653655-compute@developer.gserviceaccount.com \
           --allow-unauthenticated \
-          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          --set-env-vars "TRANSPORT_SERVICE_URL=$TRANSPORT_SERVICE_URL,DATABASE_URL=$DATABASE_URL,TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN"
