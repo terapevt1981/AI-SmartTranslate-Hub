@@ -22,7 +22,7 @@ async def route_request(request: ServiceRequest):
     request_counter.inc()
     
     service_endpoints = {
-        "translation": "http://translation-service:8000",
+        "translation": "http://translation-service:8080",
         "telegram": "http://telegram-bot-service:8080"
     }
     

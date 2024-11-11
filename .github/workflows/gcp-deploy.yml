@@ -6,6 +6,25 @@ on:
       - main
 
 env:
+env:
+  # Transport Service
+  TRANSPORT_SERVICE_DATABASE_URL: ${{ secrets.TRANSPORT_SERVICE_DATABASE_URL }}
+  TRANSPORT_SERVICE_PORT: 8080
+  TRANSPORT_SERVICE_LOG_LEVEL: INFO
+
+  # Translation Service
+  TRANSLATION_SERVICE_DATABASE_URL: ${{ secrets.TRANSLATION_SERVICE_DATABASE_URL }}
+  TRANSLATION_SERVICE_PORT: 8080
+  TRANSLATION_SERVICE_LOG_LEVEL: INFO
+  TRANSLATION_SERVICE_SUPPORTED_LANGUAGES: '{"en":"English","ru":"Русский","uk":"Українська","de":"Deutsch","fr":"Français","es":"Español","it":"Italiano"}'
+
+  # Telegram Bot Service
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TRANSPORT_SERVICE_URL: ${{ secrets.TRANSPORT_SERVICE_URL }}
+  TELEGRAM_BOT_DATABASE_URL: ${{ secrets.TELEGRAM_BOT_DATABASE_URL }}
+  TELEGRAM_BOT_SUPPORTED_LANGUAGES: '{"en":"English","ru":"Русский","uk":"Українська","de":"Deutsch","fr":"Français","es":"Español","it":"Italiano"}'
+  TELEGRAM_BOT_LOG_LEVEL: INFO
+  
   GCP_REGION: ${{ secrets.GCP_REGION }}
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
