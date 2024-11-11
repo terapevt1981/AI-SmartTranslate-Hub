@@ -90,9 +90,9 @@ jobs:
     - name: Build and Push Telegram Bot Service
       run: |
         cd telegram_bot_service
-        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }} .
+        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }} .
         gcloud auth configure-docker europe-west12-docker.pkg.dev
-        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }}
+        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }}
 
     # Деплой в Cloud Run (если применимо)
     - name: Deploy to Cloud Run Transport Service
