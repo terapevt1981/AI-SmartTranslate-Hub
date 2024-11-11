@@ -76,23 +76,23 @@ jobs:
     - name: Build and Push Transport Service
       run: |
         cd transport_service
-        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/transport-service/service:${{ github.sha }} .
+        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }} .
         gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
-        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/transport-service/service:${{ github.sha }}
+        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }}
 
     - name: Build and Push Translation Service
       run: |
         cd translation_service
-        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/translation-service/service:${{ github.sha }} .
+        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }} .
         gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
-        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/translation-service/service:${{ github.sha }}
+        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }}
 
     - name: Build and Push Telegram Bot Service
       run: |
         cd telegram_bot_service
-        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }} .
+        docker build -t europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }} .
         gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
-        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }}
+        docker push europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }}
 
     # Деплой в Cloud Run (если применимо)
     - name: Deploy to Cloud Run Transport Service
