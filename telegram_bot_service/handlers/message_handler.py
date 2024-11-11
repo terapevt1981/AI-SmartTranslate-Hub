@@ -1,3 +1,8 @@
+"""
+Модуль обработки входящих сообщений в Telegram боте.
+
+Содержит асинхронную функцию обработки сообщений от пользователей.
+"""
 from telegram import Update
 from telegram.ext import CallbackContext
 import httpx
@@ -6,7 +11,14 @@ from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-async def handle_message(update: Update, context: CallbackContext):
+async def handle_message(update: Update, context: CallbackContext) -> None:
+    """
+    Асинхронная функция обработки входящего сообщения.
+
+    Args:
+        update (Update): Объект обновления от Telegram.
+        context (CallbackContext): Контекст выполнения.
+    """
     try:
         message = update.message.text
         user_id = update.effective_user.id

@@ -2,73 +2,43 @@ name: Deploy to Google Cloud Run
 
 on:
   push:
-    branches: [ main ]
-    paths:
-      - 'telegram_bot_service/**'
-      - 'translation_service/**'
-      - 'transport_service/**'
-      - '.github/workflows/gcp-deploy.yml'
-      - '.github/workflows/docker-build.yml'
+    branches:
+      - main
 
-  workflow_dispatch:
-    inputs:
-      service:
-        description: 'Service to deploy'
-        required: true
-        type: choice
-        options:
-          - telegram_bot_service
-          - translation_service
-          - transport_service
+env:
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}
 
 jobs:
-  test:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: 
-          - telegram_bot_service
-          - translation_service
-          - transport_service
-
-    steps:
-    - uses: actions/checkout@v4
     
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest
-        pip install -r ${{ matrix.service }}/requirements.txt
-    
-    - name: Run tests
+        pip install pytest pytest-cov
+
+    # Тестирование всех сервисов
+    - name: Run Tests
       run: |
-        cd ${{ matrix.service }}
-        if [ -d "tests" ]; then
-          pytest tests/
-        else
-          echo "No tests directory found for ${{ matrix.service }}"
-        fi
+        # Запуск тестов для каждого сервиса
+        cd transport_service && pytest
+        cd ../translation_service && pytest
+        cd ../telegram_bot_service && pytest
 
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: 
-          - telegram_bot_service
-          - translation_service
-          - transport_service
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Google Auth
-      id: auth
+    # Авторизация в Google Cloud
+    - name: Google Cloud Auth
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
@@ -78,35 +48,61 @@ jobs:
 
     - name: Configure Docker
       run: |
-        gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+        gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
-    - name: Build Docker Image
+    # Сборка и публикация Docker-образов для каждого сервиса
+    - name: Build and Push Transport Service
       run: |
-        docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/service:${{ github.sha }} ./${{ matrix.service }}
+        cd transport_service
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/transport-service/service:${{ github.sha }} .
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/transport-service/service:${{ github.sha }}
 
-    - name: Push to Artifact Registry
+    - name: Build and Push Translation Service
       run: |
-        docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/service:${{ github.sha }}
+        cd translation_service
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/translation-service/service:${{ github.sha }} .
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/translation-service/service:${{ github.sha }}
 
-    - name: Deploy to Cloud Run
+    - name: Build and Push Telegram Bot Service
       run: |
-        SERVICE_NAME=$(echo "${{ matrix.service }}" | sed 's/_/-/g')
-        
-        case "${{ matrix.service }}" in
-          telegram_bot_service)
-            ENV_VARS="TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
-            ;;
-          translation_service)
-            ENV_VARS="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}"
-            ;;
-          transport_service)
-            ENV_VARS=""
-            ;;
-        esac
+        cd telegram_bot_service
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }} .
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }}
 
-        gcloud run deploy $SERVICE_NAME \
-          --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/service:${{ github.sha }} \
+    # Деплой в Cloud Run (если применимо)
+    - name: Deploy to Cloud Run Transport Service
+      run: |
+        # Пример деплоя транспортного сервиса
+        gcloud run deploy transport-service \
+          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/transport-service/service:${{ github.sha }} \
           --platform managed \
-          --region ${{ secrets.GCP_REGION }} \
+          --region ${{ env.GCP_REGION }} \
+          --allow-unauthenticated
+
+    - name: Deploy to Cloud Run Translation Service
+      run: |
+        # Пример деплоя транспортного сервиса
+        gcloud run deploy translation-service \
+          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/translation-service/service:${{ github.sha }} \
+          --platform managed \
+          --region ${{ env.GCP_REGION }} \
           --allow-unauthenticated \
-          ${ENV_VARS:+ --set-env-vars $ENV_VARS}
+          --port 8080 \
+          --cpu 1 \
+          --memory 512Mi \
+          --max-instances 3 \
+          --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}"
+
+    - name: Deploy to Cloud Run Telegram Bot Service
+      run: |
+        # Пример деплоя транспортного сервиса
+        gcloud run deploy telegram-bot \
+          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/telegram-bot-service/service:${{ github.sha }} \
+          --platform managed \
+          --region ${{ env.GCP_REGION }} \
+          --allow-unauthenticated \
+          --port 8080 \
+          --cpu 1 \
+          --memory 512Mi \
+          --max-instances 3 \
+          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
