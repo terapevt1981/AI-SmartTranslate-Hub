@@ -45,6 +45,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install pytest
+        pip install python-dotenv
+        pip install -r requirements.txt
         pip install pytest pytest-cov
 
     # Тестирование всех сервисов
