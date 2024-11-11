@@ -96,35 +96,37 @@ jobs:
 
     # Деплой в Cloud Run (если применимо)
     - name: Deploy to Cloud Run Transport Service
+      env:
+        PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        GITHUB_SHA: ${{ github.sha }}
       run: |
         gcloud run deploy transport-service \
-          --image europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/transport-service/service:${{ github.sha }} \
+          --image europe-west12-docker.pkg.dev/$PROJECT_ID/transport-service/service:$GITHUB_SHA \
           --platform managed \
           --region europe-west12 \
-          --allow-unauthenticated
+          --allow-unauthenticated \
+          --set-env-vars "DATABASE_URL=${{ secrets.TRANSPORT_SERVICE_DATABASE_URL }},PORT=8080"
 
     - name: Deploy to Cloud Run Translation Service
+      env:
+        PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        GITHUB_SHA: ${{ github.sha }}
       run: |
         gcloud run deploy translation-service \
-          --image europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/translation-service/service:${{ github.sha }} \
+          --image europe-west12-docker.pkg.dev/$PROJECT_ID/translation-service/service:$GITHUB_SHA \
           --platform managed \
           --region europe-west12 \
           --allow-unauthenticated \
-          --port 8080 \
-          --cpu 1 \
-          --memory 512Mi \
-          --max-instances 3 \
-          --set-env-vars "DATABASE_URL=${{ secrets.DATABASE_URL }}"
+          --set-env-vars "DATABASE_URL=${{ secrets.TRANSLATION_SERVICE_DATABASE_URL }},PORT=8080"
 
     - name: Deploy to Cloud Run Telegram Bot Service
+      env:
+        PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        GITHUB_SHA: ${{ github.sha }}
       run: |
         gcloud run deploy telegram-bot \
-          --image europe-west12-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/telegram-bot/telegram-bot-service:${{ github.sha }} \
+          --image europe-west12-docker.pkg.dev/$PROJECT_ID/telegram-bot/telegram-bot-service:$GITHUB_SHA \
           --platform managed \
           --region europe-west12 \
           --allow-unauthenticated \
-          --port 8080 \
-          --cpu 1 \
-          --memory 512Mi \
-          --max-instances 3 \
-          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          --set-env-vars "TRANSPORT_SERVICE_URL=${{ secrets.TRANSPORT_SERVICE_URL }},TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }},PORT=8080"  
