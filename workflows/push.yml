@@ -1,0 +1,27 @@
+name: Auto Push to GitHub
+
+on:
+  push:
+    branches:
+      - main  # или название вашей текущей ветки
+
+jobs:
+  auto-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Важно: загружает полную историю репозитория
+
+    - name: Set up Git
+      run: |
+        git config --global user.name 'terapevt1981'
+        git config --global user.email 'alex@martynov.biz'
+
+    - name: Push to Repository
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/terapevt1981/AI-SmartTranslate-Hub.git
+        git push origin HEAD:main
