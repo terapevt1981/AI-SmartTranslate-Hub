@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs Viewer</title>
+    <script>
+        async function fetchLogs() {
+            const response = await fetch('/logging/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    service_name: document.getElementById('service_name').value,
+                    levels: document.getElementById('levels').value.split(','),
+                    start_time: document.getElementById('start_time').value,
+                    end_time: document.getElementById('end_time').value,
+                    limit: parseInt(document.getElementById('limit').value)
+                })
+            });
+            const logs = await response.json();
+            document.getElementById('logs').innerText = JSON.stringify(logs, null, 2);
+        }
+    </script>
+</head>
+<body>
+    <h1>Logs Viewer</h1>
+    <input type="text" id="service_name" placeholder="Service Name">
+    <input type="text" id="levels" placeholder="Log Levels (comma separated)">
+    <input type="datetime-local" id="start_time">
+    <input type="datetime-local" id="end_time">
+    <input type="number" id="limit" value="10">
+    <button onclick="fetchLogs()">Fetch Logs</button>
+    <pre id="logs"></pre>
+    <script>
+        const socket = new WebSocket("ws://localhost:8008/ws/logs");
+        const logsContainer = document.getElementById('logs');
+        
+        socket.onopen = function(e) {
+            console.log("[WebSocket] Соединение установлено");
+            logsContainer.innerHTML += "<div>Соединение с сервером логов установлено</div>";
+        };
+        
+        socket.onmessage = function(event) {
+            console.log("[WebSocket] Получены данные:", event.data);
+            
+            // Парсинг JSON, если это JSON
+            try {
+                const logEntry = JSON.parse(event.data);
+                const logEntryHTML = `
+                    <div class="log-entry">
+                        <strong>Сервис:</strong> ${logEntry.service_name}<br>
+                        <strong>Уровень:</strong> ${logEntry.level}<br>
+                        <strong>Сообщение:</strong> ${JSON.stringify(logEntry.message)}<br>
+                        <strong>Время:</strong> ${logEntry.timestamp}
+                    </div>
+                `;
+                logsContainer.innerHTML += logEntryHTML;
+            } catch (e) {
+                // Если не JSON, просто выводим как текст
+                logsContainer.innerHTML += `<div>${event.data}</div>`;
+            }
+        };
+        
+        socket.onerror = function(error) {
+            console.error("[WebSocket] Ошибка:", error);
+            logsContainer.innerHTML += `<div style="color: red;">Ошибка подключения: ${error}</div>`;
+        };
+        
+        socket.onclose = function(event) {
+            if (event.wasClean) {
+                console.log(`[WebSocket] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+            } else {
+                console.log('[WebSocket] Соединение прервано');
+            }
+            logsContainer.innerHTML += "<div>Соединение с сервером логов закрыто</div>";
+        };
+    </script>
+</body>
+</html>

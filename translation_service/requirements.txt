@@ -1,10 +1,7 @@
-fastapi==0.68.1
-uvicorn==0.15.0
-openai==0.27.0
-sqlalchemy==1.4.41
-psycopg2-binary==2.9.3
-prometheus-client==0.14.1
+fastapi==0.109.0
+uvicorn==0.24.0
+openai
+pydantic-settings==2.1.0
+python-dotenv==1.0.1
 httpx==0.23.0
-python-dotenv==1.0.1  
-pytest
-pytest-cov
+requests
