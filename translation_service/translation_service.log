@@ -1,0 +1,40 @@
+2024-11-12 21:18:13,425 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-12 21:44:50,090 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-13 12:27:17,251 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-13 17:04:21,472 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 11:35:02,160 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 11:41:51,077 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 12:16:25,980 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 12:17:08,730 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 15:54:59,468 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 16:06:33,499 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 16:20:30,196 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 16:20:30,220 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 16:20:30,232 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
+2024-11-14 16:55:42,143 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 16:55:42,161 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 16:55:42,188 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
+2024-11-14 17:15:24,141 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 17:15:24,163 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 17:15:24,167 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
+2024-11-14 17:27:29,643 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 17:27:29,666 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 17:27:29,668 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
+2024-11-14 17:41:39,452 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 17:41:39,472 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 17:41:39,475 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
+2024-11-14 18:26:01,917 - src.routes.translate_route - ERROR - Translation error: Expecting value: line 1 column 10 (char 9)
+2024-11-14 18:27:04,098 - src.routes.translate_route - ERROR - Translation error: Expecting value: line 1 column 1 (char 0)
+2024-11-14 18:27:32,361 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 18:27:32,381 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 18:27:32,383 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
+2024-11-14 18:27:47,759 - src.routes.translate_route - ERROR - Translation error: Expecting value: line 1 column 1 (char 0)
+2024-11-14 20:56:31,873 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 20:56:31,899 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 20:56:31,931 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
+2024-11-14 20:56:55,038 - src.routes.translate_route - INFO - Received message for translation: {'payload': {'text': 'Hello, world!', 'source_lang': 'en', 'target_lang': 'ru', 'chat_id': 123456789}}
+2024-11-14 20:56:55,101 - src.translation.translator - ERROR - Translation error: Ошибка перевода через GPT: 'Completions' object has no attribute 'acreate'
+2024-11-14 20:56:55,102 - src.routes.translate_route - ERROR - Translation error: Ошибка перевода через GPT: 'Completions' object has no attribute 'acreate'
+2024-11-14 21:07:38,374 - asyncio - DEBUG - Using selector: KqueueSelector
+2024-11-14 21:07:38,398 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8008
+2024-11-14 21:07:38,402 - urllib3.connectionpool - DEBUG - http://localhost:8008 "POST /logging/log HTTP/11" 200 19
