@@ -1,9 +1,21 @@
 from fastapi import APIRouter, Request
 from ..telegram_bot import TelegramBot
 import os
+from dotenv import load_dotenv
+from aiogram import Bot
+
+# Явно загружаем переменные окружения
+load_dotenv()
 
 router = APIRouter()
 bot = TelegramBot(os.getenv("TELEGRAM_BOT_TOKEN"))
+
+# Безопасное получение токена
+token = os.getenv("TELEGRAM_BOT_TOKEN")
+if not token:
+    raise ValueError("TELEGRAM_BOT_TOKEN не установлен в переменных окружения")
+
+bot = Bot(token=token)
 
 @router.post("/process")
 async def process_translation(request: Request):

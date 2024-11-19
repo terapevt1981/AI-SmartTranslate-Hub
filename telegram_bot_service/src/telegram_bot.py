@@ -5,6 +5,7 @@ import httpx
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update
 from aiogram.methods import GetUpdates
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -79,10 +80,13 @@ async def start_telegram_bot():
     try:
         token = os.getenv('TELEGRAM_BOT_TOKEN')
         if not token:
-            raise ValueError("Telegram Bot Token is not set")
+            logger.error("CRITICAL: Telegram Bot Token is not set in environment variables!")
+            raise ValueError("Telegram Bot Token is missing")
+        
+        logger.info(f"Attempting to start Telegram Bot with token: {token[:5]}...")
         
         telegram_bot = TelegramBot(token)
         await telegram_bot.start()
     except Exception as e:
-        logger.error(f"Failed to start Telegram Bot: {e}")
+        logger.error(f"CRITICAL: Failed to start Telegram Bot: {e}", exc_info=True)
         raise

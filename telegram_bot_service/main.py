@@ -1,7 +1,13 @@
+# from telegram import Update
+# from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from contextlib import asynccontextmanager
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message
+from aiogram.filters import Command
+from aiogram.enums import ParseMode
+from aiogram.client.default import DefaultBotProperties
 from dotenv import load_dotenv
 import logging
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from config.settings import settings
 from src.clients.transport_client import TransportService
 from common.logger import ServiceLogger
@@ -11,6 +17,8 @@ import os
 import sys
 import uvicorn
 import asyncio
+
+load_dotenv()
 
 # Настройка логирования
 logging.basicConfig(
@@ -45,6 +53,19 @@ class TelegramBotService:
                 "error": str(e)
             })
 #====
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup events
+    global transport_service
+    transport_service = TransportService(settings.TRANSPORT_SERVICE_URL)
+    logger.info("Telegram Bot Service started successfully")
+    
+    # Yield control back to the application
+    yield
+    
+    # Shutdown events
+    logger.info("Telegram Bot Service is shutting down")
+    # Здесь можно добавить логику закрытия соединений, освобождения ресурсов и т.д.
 
 # app = FastAPI(title="Telegram Bot Service")
 def create_app():
@@ -52,23 +73,12 @@ def create_app():
         title="Telegram Bot Service",
         description="Telegram Bot microservice for AI SmartTranslate",
         version="1.0.0",
-        docs_url="/api/v1/docs",  # Явно укажите путь к документации
-        openapi_url="/api/v1/openapi.json"  # Явный путь к OpenAPI спецификации
+        docs_url="/api/v1/docs",
+        openapi_url="/api/v1/openapi.json",
+        lifespan=lifespan  # Используем новый параметр lifespan
     )
 
-    @app.on_event("startup")
-    async def startup_event():
-        # Здесь можно выполнить初ициализацию, например:
-        global transport_service
-        transport_service = TransportService(settings.TRANSPORT_SERVICE_URL)
-        logger.info("Telegram Bot Service started successfully")
-
-    @app.on_event("shutdown")
-    async def shutdown_event():
-        # Здесь можно выполнить очистку ресурсов
-        logger.info("Telegram Bot Service is shutting down")
-
-    # Middleware для логирования
+    # Middleware для логирования остается без изменений
     @app.middleware("http")
     async def log_requests(request: Request, call_next):
         logger = logging.getLogger("uvicorn")
@@ -87,32 +97,53 @@ fastapi_app = create_app()
 
 ###
 async def run_telegram_bot():
-    bot_service = TelegramBotService()
-    message_handler = MessageHandlerWithService(bot_service)
-
     try:
-        # Создание приложения
-        application = Application.builder().token(settings.TELEGRAM_BOT_TOKEN).build()
+        # Явное логирование параметров бота
+        logger.info(f"Telegram Bot Token: {settings.TELEGRAM_BOT_TOKEN[:5]}...")
         
-        # Регистрация обработчиков
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(MessageHandler(
-            filters.TEXT & ~filters.COMMAND, 
-            message_handler.handle_message
-        ))
+        bot_service = TelegramBotService()
+        message_handler = MessageHandlerWithService(bot_service)
+
+        # Проверка токена перед созданием бота
+        if not settings.TELEGRAM_BOT_TOKEN:
+            logger.error("CRITICAL: Telegram Bot Token is not set!")
+            raise ValueError("Telegram Bot Token is missing")
+
+        bot = Bot(
+            token=settings.TELEGRAM_BOT_TOKEN, 
+            default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        )
         
+        # Проверка подключения к Telegram API
+        try:
+            bot_info = await bot.get_me()
+            logger.info(f"Successfully connected to Telegram API. Bot username: {bot_info.username}")
+        except Exception as api_error:
+            logger.error(f"Failed to connect to Telegram API: {api_error}")
+            raise
+
+        dp = Dispatcher()
+
+        # Регистрация хэндлеров
+        dp.message(Command("start"))(start)
+        dp.message(F.text and ~F.text.startswith("/"))(message_handler.handle_message)
+
         # Логирование старта
         bot_service.logger.info({
             "event": "bot_started",
             "log_level": settings.LOG_LEVEL
         })
-        logger.info(f"Telegram Bot started with log level: {settings.LOG_LEVEL}")
         
-        # Запуск бота с обработкой ошибок
-        await application.run_polling(drop_pending_updates=True)
+        # Запуск бота с расширенным логированием
+        logger.info("Starting bot polling...")
+        await dp.start_polling(
+            bot, 
+            drop_pending_updates=True,  # Очистка предыдущих необработанных апдейтов
+            timeout=60  # Таймаут для длинных опросов
+        )
     
     except Exception as e:
-        logger.error(f"Telegram Bot encountered an error: {e}")
+        logger.error(f"CRITICAL: Telegram Bot startup failed: {e}", exc_info=True)
         bot_service.logger.error({
             "event": "bot_startup_failed",
             "error": str(e)
@@ -126,53 +157,45 @@ async def run_telegram_bot():
 # Инициализация транспортного сервиса
 # transport_service = TransportService(settings.TRANSPORT_SERVICE_URL)
 
-async def start(update: Update, context):
-    await update.message.reply_text('Привет! Я бот для перевода текста.')
-
+async def start(message: Message):
+    await message.answer('Привет! Я бот для перевода текста.')
 
 class MessageHandlerWithService:
     def __init__(self, bot_service):
         self.bot_service = bot_service
 
-    async def handle_message(self, update: Update, context):
-        text = update.message.text
-        chat_id = update.effective_chat.id
-        
+    async def handle_message(self, message: Message):        
         try:
             # Логика обработки сообщения
             response = await transport_service.send_message({
                 'service_from': 'telegram_bot',
                 'service_to': 'translation',
-                'text': text,
-                'chat_id': chat_id
+                'text': message.text,
+                'chat_id': message.chat.id
             })
             
             # Логирование успешной обработки
             self.bot_service.logger.info({
                 "event": "message_processed",
-                "chat_id": chat_id,
-                "text": text
+                "chat_id": message.chat.id,
+                "text": message.text
             })
             
             # Отправка ответа пользователю
-            await update.message.reply_text(
-              response.get(
-                'text', 'Не удалось получить перевод'
-                ))
+            await message.answer(
+                response.get('text', 'Не удалось получить перевод')
+            )
         
         except Exception as e:
             # Логирование ошибки в службу логирования
             self.bot_service.logger.error({
                 "event": "message_processing_failed",
                 "error": str(e),
-                "chat_id": chat_id,
-                "text": text
+                "chat_id": message.chat.id,
+                "text": message.text
             })
             
-            # Логирование ошибки в файл логов
-            logger.error(f"Error processing message: {e}")
-            
-            await update.message.reply_text("Произошла ошибка при обработке сообщения.")
+            await message.answer("Произошла ошибка при обработке сообщения.")
 
 async def main():
     try:
@@ -191,50 +214,16 @@ async def main():
         )
         server = uvicorn.Server(config)
 
-        # Создание задач с обработкой отмены
-#         fastapi_task = asyncio.create_task(server.serve())
-#         telegram_bot_task = asyncio.create_task(run_telegram_bot())
-        
-#         # Использование gather вместо wait для более простой обработки
-#         await asyncio.gather(
-#             fastapi_task, 
-#             telegram_bot_task, 
-#             return_exceptions=True
-#         )
-
-#         # Обработка завершившихся задач
-#         for task in done:
-#             try:
-#                 task.result()
-#             except Exception as e:
-#                 logger.error(f"Task completed with error: {e}")
-
-#         # Отмена оставшихся задач
-#         for task in pending:
-#             task.cancel()
-#             try:
-#                 await task
-#             except asyncio.CancelledError:
-#                 logger.info("Task was cancelled")
-
-#     except Exception as e:
-#         logger.error(f"Error in main: {e}")
-#     finally:
-#         logger.info("Shutting down services...")
-        
-# if __name__ == '__main__':
-#     try:
-#         asyncio.run(main())
-#     except KeyboardInterrupt:
-#         logger.info("Received exit signal. Shutting down...")
-#     except Exception as e:
-#         logger.error(f"Unhandled exception: {e}")
-
-
-        telegram_bot_task = asyncio.create_task(start_telegram_bot())
+        # Создание задач
+        fastapi_task = asyncio.create_task(server.serve())
+        telegram_bot_task = asyncio.create_task(run_telegram_bot())
         
         # Ожидаем завершения задач
-        await asyncio.gather(fastapi_task, telegram_bot_task)
+        await asyncio.gather(
+            fastapi_task, 
+            telegram_bot_task, 
+            return_exceptions=True
+        )
 
     except KeyboardInterrupt:
         logger.info("Shutting down services...")
